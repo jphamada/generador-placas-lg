@@ -45,7 +45,7 @@ FUENTE_SUBTITULO_BOLD = "Roboto-Bold.ttf"
 FUENTE_TITULO_BOLD = "Merriweather_24pt-ExtraBold.ttf"
 
 st.title("📸 Creador de Placas")
-st.info("Diseño optimizado: El título ahora es más grande y las listas están ordenadas.")
+st.info("Diseño optimizado: Título EXTRA GRANDE.")
 
 # --- PASO 1: SUBIR FOTO ---
 st.header("1️⃣ Sube tu imagen")
@@ -59,14 +59,13 @@ col1, col2 = st.columns(2)
 with col1:
     if os.path.exists(CARPETA_PLANTILLAS):
         templates = [f for f in os.listdir(CARPETA_PLANTILLAS) if f.endswith(('.png', '.jpg'))]
-        templates.sort() # Ordenar alfabéticamente las plantillas
+        templates.sort()
         plantilla_sel = st.selectbox("Elige la plantilla", templates, key="sel_plantilla") if templates else None
     else:
         st.error("Carpeta 'templates' no encontrada.")
         plantilla_sel = None
 
 with col2:
-    # Lista de colores ordenada según tu pedido
     colores_predefinidos = {
         "Azul LG": "#005CC3",
         "Rojo": "#C30000",
@@ -100,14 +99,16 @@ if foto_usuario and titulo_input and plantilla_sel:
         ruta_sub = os.path.join(CARPETA_FUENTES, FUENTE_SUBTITULO_BOLD)
         ruta_tit = os.path.join(CARPETA_FUENTES, FUENTE_TITULO_BOLD)
         
-        font_sub = cargar_fuente(ruta_sub, 45) 
-        font_tit = cargar_fuente(ruta_tit, 95) # Título aumentado a 95
+        # --- CAMBIO 1: AUMENTAR TAMAÑO DE FUENTE ---
+        font_sub = cargar_fuente(ruta_sub, 45)
+        font_tit = cargar_fuente(ruta_tit, 120) # Aumentado a 120 (antes 95)
 
         X_MARGEN = 60
         draw.text((X_MARGEN, 100), subtitulo_input.upper(), font=font_sub, fill=color_texto, anchor="la")
         
-        # Ajustamos el 'width' a 18 para que el texto grande no se desborde
-        titulo_wrapped = textwrap.fill(titulo_input, width=18)
+        # --- CAMBIO 2: REDUCIR ANCHO DE WRAP ---
+        # Reducimos width a 14 para compensar la letra grande
+        titulo_wrapped = textwrap.fill(titulo_input, width=14)
         draw.multiline_text((X_MARGEN, 180), titulo_wrapped, font=font_tit, fill=color_texto, 
                             anchor="la", spacing=15, align="left")
 
