@@ -5,9 +5,9 @@ import textwrap
 from io import BytesIO
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Editor de Placas LG", layout="centered")
+st.set_page_config(page_title="Generador de Placas LG", layout="centered")
 
-# CSS para botones grandes y tipografía clara en móviles
+# CSS para optimizar la visualización en dispositivos móviles
 st.markdown("""
     <style>
     div.stButton > button:first-child {
@@ -15,9 +15,11 @@ st.markdown("""
         height: 3.5em;
         font-weight: bold;
         border-radius: 10px;
-        background-color: #f0f2f6;
+        background-color: #005CC3;
+        color: white;
     }
-    stTextInput > div > div > input { font-size: 18px !important; }
+    input { font-size: 16px !important; }
+    textarea { font-size: 16px !important; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -33,15 +35,15 @@ CARPETA_PLANTILLAS = "templates"
 FUENTE_SUBTITULO = "Roboto-Bold.ttf"
 FUENTE_TITULO = "Merriweather_24pt-Black.ttf"
 
-st.title("📸 Generador de Placas Pro")
-st.info("Configuración restaurada: Fuentes extra grandes y diseño móvil.")
+st.title("📸 Creador de Placas LG")
+st.info("Diseño ajustado: El texto ahora respeta mejor el margen derecho.")
 
 # --- PASO 1: IMAGEN ---
 st.header("1️⃣ Sube tu imagen")
-foto_usuario = st.file_uploader("Galería o Cámara", type=["jpg", "png", "jpeg"], key="foto_subida")
+foto_usuario = st.file_uploader("Cargar desde galería o cámara", type=["jpg", "png", "jpeg"], key="foto_subida")
 
 # --- PASO 2: DISEÑO Y COLOR ---
-st.header("2️⃣ Configura el diseño")
+st.header("2️⃣ Configuración visual")
 
 col1, col2 = st.columns(2)
 
@@ -49,9 +51,9 @@ with col1:
     if os.path.exists(CARPETA_PLANTILLAS):
         templates = [f for f in os.listdir(CARPETA_PLANTILLAS) if f.endswith(('.png', '.jpg'))]
         templates.sort()
-        plantilla_sel = st.selectbox("Plantilla", templates, key="sel_plantilla")
+        plantilla_sel = st.selectbox("Elegir Plantilla", templates, key="sel_plantilla")
     else:
-        st.error("Error: No hay carpeta 'templates'")
+        st.error("Error: Sube tus archivos PNG a la carpeta 'templates'")
         plantilla_sel = None
 
 with col2:
@@ -61,7 +63,7 @@ with col2:
         "Verde": "#0A920E",
         "Personalizado": "CUSTOM"
     }
-    seleccion_color = st.selectbox("Color Texto", list(colores_predefinidos.keys()), key="sel_color")
+    seleccion_color = st.selectbox("Color del Texto", list(colores_predefinidos.keys()), key="sel_color")
     
     if seleccion_color == "Personalizado":
         color_texto = st.color_picker("Color propio", "#005b9f", key="color_custom")
@@ -70,42 +72,39 @@ with col2:
 
 # --- PASO 3: TEXTOS ---
 st.header("3️⃣ Contenido")
-subtitulo_input = st.text_input("Subtítulo", "UNO POR UNO", key="input_sub")
-titulo_input = st.text_area("Título Principal", "Escribe el mensaje aquí...", key="input_tit")
+subtitulo_input = st.text_input("Subtítulo (Ej: UNO POR UNO)", "UNO POR UNO", key="input_sub")
+titulo_input = st.text_area("Título de la Placa", "Escribe el título aquí...", key="input_tit")
 
 st.divider()
 
 # --- PROCESAMIENTO ---
 if foto_usuario and titulo_input and plantilla_sel:
     try:
-        # 1. Preparar Fondo (Center Crop)
+        # 1. Preparar Fondo con recorte proporcional
         usuario_img = Image.open(foto_usuario).convert("RGBA")
         fondo = ImageOps.fit(usuario_img, (1080, 1350), method=Image.Resampling.LANCZOS)
         
-        # 2. Superponer Plantilla
-        plantilla = Image.open(os.path.join(CARPETA_PLANTILLAS, plantilla_sel)).convert("RGBA")
-        final_img = Image.alpha_composite(fondo, plantilla)
+        # 2. Superponer Plantilla transparente
+        plantilla_path = os.path.join(CARPETA_PLANTILLAS, plantilla_sel)
+        plantilla_img = Image.open(plantilla_path).convert("RGBA")
+        final_img = Image.alpha_composite(fondo, plantilla_img)
         draw = ImageDraw.Draw(final_img)
 
-        # 3. CARGAR FUENTES (Lógica de tamaño real)
-        try:
-            ruta_sub = os.path.join(CARPETA_FUENTES, FUENTE_SUBTITULO)
-            ruta_tit = os.path.join(CARPETA_FUENTES, FUENTE_TITULO)
-            
-            # TAMAÑOS RECUPERADOS
-            font_sub = ImageFont.truetype(ruta_sub, 35)
-            font_tit = ImageFont.truetype(ruta_tit, 65)
-        except:
-            st.error("⚠️ No se encontraron las fuentes en /fonts. Las letras se verán pequeñas.")
-            font_sub = font_tit = ImageFont.load_default()
+        # 3. Cargar Fuentes (Tamaños Extra Grandes)
+        ruta_sub = os.path.join(CARPETA_FUENTES, FUENTE_SUBTITULO)
+        ruta_tit = os.path.join(CARPETA_FUENTES, FUENTE_TITULO)
+        
+        # TAMAÑOS FINALES: 45 y 120
+        font_sub = ImageFont.truetype(ruta_sub, 45)
+        font_tit = ImageFont.truetype(ruta_tit, 120)
 
-        # 4. DIBUJAR
+        # 4. Dibujar Textos
         X_MARGEN = 60
-        # Subtítulo
+        # Subtítulo en la parte superior
         draw.text((X_MARGEN, 100), subtitulo_input.upper(), font=font_sub, fill=color_texto, anchor="la")
         
-        # Título Extra Grande (Ancho corto para evitar desborde)
-        titulo_wrapped = textwrap.fill(titulo_input, width=14)
+        # Título destacado (Se redujo width a 12 para corregir el margen derecho)
+        titulo_wrapped = textwrap.fill(titulo_input, width=12)
         draw.multiline_text((X_MARGEN, 180), titulo_wrapped, font=font_tit, fill=color_texto, 
                             anchor="la", spacing=15, align="left")
 
@@ -117,12 +116,12 @@ if foto_usuario and titulo_input and plantilla_sel:
         with c1:
             buf = BytesIO()
             final_img.save(buf, format="PNG")
-            st.download_button("✅ Descargar", buf.getvalue(), "placa_pro.png", "image/png")
+            st.download_button("✅ Descargar Placa", buf.getvalue(), "placa_lg_final.png", "image/png")
         with c2:
-            if st.button("🔄 Reiniciar"):
+            if st.button("🔄 Reiniciar Todo"):
                 reiniciar_app()
 
     except Exception as e:
-        st.error(f"Error técnico: {e}")
+        st.error(f"Error al generar la imagen: {e}")
 else:
-    st.warning("Sube una foto y escribe un título para generar la placa.")
+    st.warning("⚠️ Sube una imagen y escribe el título para ver la vista previa.")
