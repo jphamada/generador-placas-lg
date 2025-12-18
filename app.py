@@ -7,7 +7,7 @@ from io import BytesIO
 # --- CONFIGURACIÓN DE PÁGINA ---
 st.set_page_config(page_title="Editor de Placas LG", layout="centered")
 
-# Inyectar CSS para mejorar la UX en móviles
+# CSS para mejorar la UX en móviles
 st.markdown("""
     <style>
     div.stButton > button:first-child {
@@ -17,7 +17,7 @@ st.markdown("""
         border-radius: 10px;
     }
     .stTextInput > div > div > input, .stTextArea > div > div > textarea {
-        font-size: 16px !important; /* Evita zoom automático en iPhone */
+        font-size: 16px !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -28,19 +28,14 @@ def reiniciar_app():
         del st.session_state[key]
     st.rerun()
 
-# --- FUNCIÓN PARA CARGAR FUENTES CON RESPALDO ---
+# --- CARGA DE FUENTES CON RESPALDO ---
 def cargar_fuente(ruta_fuente, tamano):
-    """Intenta cargar una fuente, con respaldos si falla."""
     try:
-        # Intenta cargar la fuente específica
         return ImageFont.truetype(ruta_fuente, tamano)
     except OSError:
         try:
-            # Si falla, intenta con una fuente de sistema común (Arial)
             return ImageFont.truetype("arial.ttf", tamano)
         except OSError:
-            # Si todo falla, usa la fuente predeterminada (que es pequeña)
-            st.warning(f"No se pudo cargar la fuente {os.path.basename(ruta_fuente)} ni la de respaldo. Usando fuente predeterminada.")
             return ImageFont.load_default()
 
 # --- CONSTANTES ---
@@ -49,9 +44,8 @@ CARPETA_PLANTILLAS = "templates"
 FUENTE_SUBTITULO_BOLD = "Roboto-Bold.ttf"
 FUENTE_TITULO_BOLD = "Merriweather_24pt-ExtraBold.ttf"
 
-# --- ENCABEZADO ---
 st.title("📸 Creador de Placas")
-st.info("Sigue los pasos. Puedes editar los textos y ver el cambio al instante sin resubir la foto.")
+st.info("Diseño optimizado: El título ahora es más grande y las listas están ordenadas.")
 
 # --- PASO 1: SUBIR FOTO ---
 st.header("1️⃣ Sube tu imagen")
@@ -65,12 +59,14 @@ col1, col2 = st.columns(2)
 with col1:
     if os.path.exists(CARPETA_PLANTILLAS):
         templates = [f for f in os.listdir(CARPETA_PLANTILLAS) if f.endswith(('.png', '.jpg'))]
+        templates.sort() # Ordenar alfabéticamente las plantillas
         plantilla_sel = st.selectbox("Elige la plantilla", templates, key="sel_plantilla") if templates else None
     else:
         st.error("Carpeta 'templates' no encontrada.")
         plantilla_sel = None
 
 with col2:
+    # Lista de colores ordenada según tu pedido
     colores_predefinidos = {
         "Azul LG": "#005CC3",
         "Rojo": "#C30000",
@@ -89,33 +85,29 @@ st.header("3️⃣ Escribe el contenido")
 subtitulo_input = st.text_input("Subtítulo", "UNO POR UNO", key="input_sub")
 titulo_input = st.text_area("Título de la placa", "Escribe el mensaje aquí...", key="input_tit")
 
-# --- VISTA PREVIA Y PROCESAMIENTO ---
 st.divider()
 
 if foto_usuario and titulo_input and plantilla_sel:
     try:
-        # Procesar imagen base (proporcional)
         usuario_img = Image.open(foto_usuario).convert("RGBA")
         fondo = ImageOps.fit(usuario_img, (1080, 1350), method=Image.Resampling.LANCZOS)
         
-        # Superponer plantilla
         plantilla = Image.open(os.path.join(CARPETA_PLANTILLAS, plantilla_sel)).convert("RGBA")
         final_img = Image.alpha_composite(fondo, plantilla)
         draw = ImageDraw.Draw(final_img)
 
-        # Cargar fuentes usando la nueva función
+        # Cargar fuentes
         ruta_sub = os.path.join(CARPETA_FUENTES, FUENTE_SUBTITULO_BOLD)
         ruta_tit = os.path.join(CARPETA_FUENTES, FUENTE_TITULO_BOLD)
         
-        # Tamaños de fuente más grandes
-        font_sub = cargar_fuente(ruta_sub, 45) # Aumentado de 35 a 45
-        font_tit = cargar_fuente(ruta_tit, 75) # Aumentado de 65 a 75
+        font_sub = cargar_fuente(ruta_sub, 45) 
+        font_tit = cargar_fuente(ruta_tit, 95) # Título aumentado a 95
 
-        # Dibujar Texto
         X_MARGEN = 60
         draw.text((X_MARGEN, 100), subtitulo_input.upper(), font=font_sub, fill=color_texto, anchor="la")
         
-        titulo_wrapped = textwrap.fill(titulo_input, width=22) # Ajustado el ancho del texto
+        # Ajustamos el 'width' a 18 para que el texto grande no se desborde
+        titulo_wrapped = textwrap.fill(titulo_input, width=18)
         draw.multiline_text((X_MARGEN, 180), titulo_wrapped, font=font_tit, fill=color_texto, 
                             anchor="la", spacing=15, align="left")
 
@@ -123,26 +115,20 @@ if foto_usuario and titulo_input and plantilla_sel:
         st.header("4️⃣ Resultado")
         st.image(final_img, use_container_width=True)
 
-        # Botones de Acción
         col_down, col_reset = st.columns(2)
         
         with col_down:
             buf = BytesIO()
             final_img.save(buf, format="PNG")
-            st.download_button(
-                label="✅ Descargar Placa", 
-                data=buf.getvalue(), 
-                file_name="placa_lg.png", 
-                mime="image/png"
-            )
+            st.download_button("✅ Descargar Placa", buf.getvalue(), "placa_final.png", "image/png")
             
         with col_reset:
-            if st.button("🔄 Reiniciar Todo"):
+            if st.button("🔄 Reiniciar"):
                 reiniciar_app()
 
     except Exception as e:
         st.error(f"Error: {e}")
 else:
-    st.warning("Completa los campos anteriores para generar la vista previa.")
+    st.warning("Completa los campos anteriores para ver la vista previa.")
     if st.button("🔄 Limpiar Formulario"):
         reiniciar_app()
