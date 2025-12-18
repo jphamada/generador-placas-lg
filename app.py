@@ -10,7 +10,7 @@ st.title("🎨 Creador de Placas LG (Proporciones Perfectas)")
 CARPETA_FUENTES = "fonts"
 CARPETA_PLANTILLAS = "templates"
 FUENTE_SUBTITULO_BOLD = "Roboto-Bold.ttf"
-FUENTE_TITULO_BOLD = "Montserrat-Bold.ttf"
+FUENTE_TITULO_BOLD = "Merriweather_24pt-Black.ttf"
 
 # --- INTERFAZ ---
 with st.sidebar:
