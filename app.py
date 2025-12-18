@@ -94,7 +94,7 @@ if foto_usuario and titulo_input and plantilla_sel:
             
             # TAMAÑOS RECUPERADOS
             font_sub = ImageFont.truetype(ruta_sub, 35)
-            font_tit = ImageFont.truetype(ruta_tit, 85)
+            font_tit = ImageFont.truetype(ruta_tit, 65)
         except:
             st.error("⚠️ No se encontraron las fuentes en /fonts. Las letras se verán pequeñas.")
             font_sub = font_tit = ImageFont.load_default()
