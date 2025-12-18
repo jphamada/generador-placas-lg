@@ -28,6 +28,21 @@ def reiniciar_app():
         del st.session_state[key]
     st.rerun()
 
+# --- FUNCIÓN PARA CARGAR FUENTES CON RESPALDO ---
+def cargar_fuente(ruta_fuente, tamano):
+    """Intenta cargar una fuente, con respaldos si falla."""
+    try:
+        # Intenta cargar la fuente específica
+        return ImageFont.truetype(ruta_fuente, tamano)
+    except OSError:
+        try:
+            # Si falla, intenta con una fuente de sistema común (Arial)
+            return ImageFont.truetype("arial.ttf", tamano)
+        except OSError:
+            # Si todo falla, usa la fuente predeterminada (que es pequeña)
+            st.warning(f"No se pudo cargar la fuente {os.path.basename(ruta_fuente)} ni la de respaldo. Usando fuente predeterminada.")
+            return ImageFont.load_default()
+
 # --- CONSTANTES ---
 CARPETA_FUENTES = "fonts"
 CARPETA_PLANTILLAS = "templates"
@@ -40,7 +55,6 @@ st.info("Sigue los pasos. Puedes editar los textos y ver el cambio al instante s
 
 # --- PASO 1: SUBIR FOTO ---
 st.header("1️⃣ Sube tu imagen")
-# Usamos una 'key' para poder resetear el componente
 foto_usuario = st.file_uploader("Selecciona una foto", type=["jpg", "png", "jpeg"], key="foto_subida")
 
 # --- PASO 2: DISEÑO Y COLOR ---
@@ -51,7 +65,7 @@ col1, col2 = st.columns(2)
 with col1:
     if os.path.exists(CARPETA_PLANTILLAS):
         templates = [f for f in os.listdir(CARPETA_PLANTILLAS) if f.endswith(('.png', '.jpg'))]
-        plantilla_sel = st.selectbox("Elige la plantilla", templates, key="sel_plantilla")
+        plantilla_sel = st.selectbox("Elige la plantilla", templates, key="sel_plantilla") if templates else None
     else:
         st.error("Carpeta 'templates' no encontrada.")
         plantilla_sel = None
@@ -89,18 +103,19 @@ if foto_usuario and titulo_input and plantilla_sel:
         final_img = Image.alpha_composite(fondo, plantilla)
         draw = ImageDraw.Draw(final_img)
 
-        # Cargar fuentes
-        try:
-            font_sub = ImageFont.truetype(os.path.join(CARPETA_FUENTES, FUENTE_SUBTITULO_BOLD), 35)
-            font_tit = ImageFont.truetype(os.path.join(CARPETA_FUENTES, FUENTE_TITULO_BOLD), 65)
-        except:
-            font_sub = font_tit = ImageFont.load_default()
+        # Cargar fuentes usando la nueva función
+        ruta_sub = os.path.join(CARPETA_FUENTES, FUENTE_SUBTITULO_BOLD)
+        ruta_tit = os.path.join(CARPETA_FUENTES, FUENTE_TITULO_BOLD)
+        
+        # Tamaños de fuente más grandes
+        font_sub = cargar_fuente(ruta_sub, 45) # Aumentado de 35 a 45
+        font_tit = cargar_fuente(ruta_tit, 75) # Aumentado de 65 a 75
 
         # Dibujar Texto
         X_MARGEN = 60
         draw.text((X_MARGEN, 100), subtitulo_input.upper(), font=font_sub, fill=color_texto, anchor="la")
         
-        titulo_wrapped = textwrap.fill(titulo_input, width=26)
+        titulo_wrapped = textwrap.fill(titulo_input, width=22) # Ajustado el ancho del texto
         draw.multiline_text((X_MARGEN, 180), titulo_wrapped, font=font_tit, fill=color_texto, 
                             anchor="la", spacing=15, align="left")
 
