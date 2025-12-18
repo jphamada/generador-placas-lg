@@ -14,10 +14,39 @@ FUENTE_TITULO_BOLD = "Merriweather_24pt-Black.ttf"
 
 # --- INTERFAZ ---
 with st.sidebar:
-    st.header("Texto de la Placa")
+    st.header("Configuración de la Placa")
+    
+    # 1. Inputs de Texto
     subtitulo_input = st.text_input("Subtítulo", "UNO POR UNO")
     titulo_input = st.text_area("Título", "Escribe aquí el título principal...")
-    color_texto = st.color_picker("Color del texto", "#005b9f")
+    
+    st.divider() # Línea divisoria para organizar mejor
+    
+    # 2. Lógica de Colores
+    st.subheader("Color del Texto")
+    
+    # Definimos los colores básicos en un diccionario para fácil acceso
+    colores_predefinidos = {
+        "Azul LG": "#005CC3",
+        "Rojo": "#C30000",
+        "Verde": "#0A920E",
+        "Personalizado": "CUSTOM"
+    }
+    
+    # El usuario elige entre los nombres de los colores
+    seleccion_color = st.radio(
+        "Elige un color o usa uno propio:",
+        options=list(colores_predefinidos.keys())
+    )
+    
+    # Si elige "Personalizado", mostramos el Color Picker
+    if seleccion_color == "Personalizado":
+        color_texto = st.color_picker("Selecciona tu color", "#005b9f")
+    else:
+        # Si elige uno básico, asignamos el código Hexadecimal correspondiente
+        color_texto = colores_predefinidos[seleccion_color]
+
+    st.divider()
 
 foto_usuario = st.file_uploader("1. Sube tu foto", type=["jpg", "png", "jpeg"])
 
