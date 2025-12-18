@@ -5,7 +5,7 @@ import textwrap
 from io import BytesIO
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Editor de Placas LG", layout="centered")
+st.set_page_config(page_title="Generador de Placas LG", layout="centered")
 
 # CSS para optimizar la visualización en dispositivos móviles
 st.markdown("""
@@ -36,7 +36,7 @@ FUENTE_SUBTITULO = "Roboto-Bold.ttf"
 FUENTE_TITULO = "Merriweather_24pt-Black.ttf"
 
 st.title("📸 Creador de Placas LG")
-st.info("Configuración: Subtítulo 35px | Título 65px | Margen expandido.")
+st.info("Ajuste de margen derecho aplicado para evitar superposición con el diseño.")
 
 # --- PASO 1: IMAGEN ---
 st.header("1️⃣ Sube tu imagen")
@@ -104,9 +104,9 @@ if foto_usuario and titulo_input and plantilla_sel:
         # Dibujar Subtítulo
         draw.text((X_MARGEN, 100), subtitulo_input.upper(), font=font_sub, fill=color_texto, anchor="la")
         
-        # AJUSTE DE MARGEN DERECHO: 
-        # Aumentamos width a 28 para que el texto de 65px ocupe todo el espacio blanco
-        titulo_wrapped = textwrap.fill(titulo_input, width=28)
+        # AJUSTE DE MARGEN DERECHO:
+        # Reducimos width a 24 para crear un margen derecho y evitar que el texto toque las bandas de color.
+        titulo_wrapped = textwrap.fill(titulo_input, width=24)
         
         draw.multiline_text((X_MARGEN, 180), titulo_wrapped, font=font_tit, fill=color_texto, 
                             anchor="la", spacing=15, align="left")
