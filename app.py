@@ -95,8 +95,8 @@ if foto_usuario and titulo_input and plantilla_sel:
         ruta_tit = os.path.join(CARPETA_FUENTES, FUENTE_TITULO)
         
         # TAMAÑOS FINALES: 45 y 120
-        font_sub = ImageFont.truetype(ruta_sub, 45)
-        font_tit = ImageFont.truetype(ruta_tit, 120)
+        font_sub = ImageFont.truetype(ruta_sub, 35)
+        font_tit = ImageFont.truetype(ruta_tit, 65)
 
         # 4. Dibujar Textos
         X_MARGEN = 60
