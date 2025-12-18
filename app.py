@@ -5,7 +5,7 @@ import textwrap
 from io import BytesIO
 
 # --- CONFIGURACIÓN DE PÁGINA ---
-st.set_page_config(page_title="Generador de Placas LG", layout="centered")
+st.set_page_config(page_title="Editor de Placas LG", layout="centered")
 
 # CSS para optimizar la visualización en dispositivos móviles
 st.markdown("""
@@ -36,7 +36,7 @@ FUENTE_SUBTITULO = "Roboto-Bold.ttf"
 FUENTE_TITULO = "Merriweather_24pt-Black.ttf"
 
 st.title("📸 Creador de Placas LG")
-st.info("Diseño ajustado: El texto ahora respeta mejor el margen derecho.")
+st.info("Configuración: Subtítulo 35px | Título 65px | Margen expandido.")
 
 # --- PASO 1: IMAGEN ---
 st.header("1️⃣ Sube tu imagen")
@@ -53,7 +53,7 @@ with col1:
         templates.sort()
         plantilla_sel = st.selectbox("Elegir Plantilla", templates, key="sel_plantilla")
     else:
-        st.error("Error: Sube tus archivos PNG a la carpeta 'templates'")
+        st.error("Error: Carpeta 'templates' no encontrada")
         plantilla_sel = None
 
 with col2:
@@ -72,7 +72,7 @@ with col2:
 
 # --- PASO 3: TEXTOS ---
 st.header("3️⃣ Contenido")
-subtitulo_input = st.text_input("Subtítulo (Ej: UNO POR UNO)", "UNO POR UNO", key="input_sub")
+subtitulo_input = st.text_input("Subtítulo", "UNO POR UNO", key="input_sub")
 titulo_input = st.text_area("Título de la Placa", "Escribe el título aquí...", key="input_tit")
 
 st.divider()
@@ -80,31 +80,34 @@ st.divider()
 # --- PROCESAMIENTO ---
 if foto_usuario and titulo_input and plantilla_sel:
     try:
-        # 1. Preparar Fondo con recorte proporcional
+        # 1. Preparar Fondo
         usuario_img = Image.open(foto_usuario).convert("RGBA")
         fondo = ImageOps.fit(usuario_img, (1080, 1350), method=Image.Resampling.LANCZOS)
         
-        # 2. Superponer Plantilla transparente
+        # 2. Superponer Plantilla
         plantilla_path = os.path.join(CARPETA_PLANTILLAS, plantilla_sel)
         plantilla_img = Image.open(plantilla_path).convert("RGBA")
         final_img = Image.alpha_composite(fondo, plantilla_img)
         draw = ImageDraw.Draw(final_img)
 
-        # 3. Cargar Fuentes (Tamaños Extra Grandes)
+        # 3. Cargar Fuentes con los tamaños solicitados
         ruta_sub = os.path.join(CARPETA_FUENTES, FUENTE_SUBTITULO)
         ruta_tit = os.path.join(CARPETA_FUENTES, FUENTE_TITULO)
         
-        # TAMAÑOS FINALES: 45 y 120
+        # TAMAÑOS SOLICITADOS
         font_sub = ImageFont.truetype(ruta_sub, 35)
         font_tit = ImageFont.truetype(ruta_tit, 65)
 
         # 4. Dibujar Textos
         X_MARGEN = 60
-        # Subtítulo en la parte superior
+        
+        # Dibujar Subtítulo
         draw.text((X_MARGEN, 100), subtitulo_input.upper(), font=font_sub, fill=color_texto, anchor="la")
         
-        # Título destacado (Se redujo width a 12 para corregir el margen derecho)
-        titulo_wrapped = textwrap.fill(titulo_input, width=12)
+        # AJUSTE DE MARGEN DERECHO: 
+        # Aumentamos width a 28 para que el texto de 65px ocupe todo el espacio blanco
+        titulo_wrapped = textwrap.fill(titulo_input, width=28)
+        
         draw.multiline_text((X_MARGEN, 180), titulo_wrapped, font=font_tit, fill=color_texto, 
                             anchor="la", spacing=15, align="left")
 
@@ -116,12 +119,12 @@ if foto_usuario and titulo_input and plantilla_sel:
         with c1:
             buf = BytesIO()
             final_img.save(buf, format="PNG")
-            st.download_button("✅ Descargar Placa", buf.getvalue(), "placa_lg_final.png", "image/png")
+            st.download_button("✅ Descargar Placa", buf.getvalue(), "placa_final.png", "image/png")
         with c2:
-            if st.button("🔄 Reiniciar Todo"):
+            if st.button("🔄 Reiniciar"):
                 reiniciar_app()
 
     except Exception as e:
-        st.error(f"Error al generar la imagen: {e}")
+        st.error(f"Error: {e}")
 else:
-    st.warning("⚠️ Sube una imagen y escribe el título para ver la vista previa.")
+    st.warning("⚠️ Sube una imagen y completa el título.")
