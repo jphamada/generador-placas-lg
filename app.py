@@ -5,7 +5,7 @@ import textwrap
 
 # --- CONFIGURACIÓN ---
 st.set_page_config(page_title="Generador de Placas LG", layout="centered")
-st.title("🎨 Creador de Placas LG (Proporciones Perfectas)")
+st.title("🎨 Creador de Placas LG")
 
 CARPETA_FUENTES = "fonts"
 CARPETA_PLANTILLAS = "templates"
@@ -17,7 +17,7 @@ with st.sidebar:
     st.header("Configuración de la Placa")
     
     # 1. Inputs de Texto
-    subtitulo_input = st.text_input("Subtítulo", "UNO POR UNO")
+    subtitulo_input = st.text_input("Subtítulo", "ESCRIBE EL SUBTÍTULO")
     titulo_input = st.text_area("Título", "Escribe aquí el título principal...")
     
     st.divider() # Línea divisoria para organizar mejor
